@@ -1,4 +1,4 @@
-# Merox Homelab Deployment Guide
+# Merox.dev Homelab-as-Code Deployment Guide
 
 ## Pre-requisites
 
