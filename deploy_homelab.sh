@@ -59,37 +59,53 @@ else
     echo "Terraform is already installed."
 fi
 
-# Generate SSH key
-SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
-if [ ! -f "$SSH_KEY_PATH" ]; then
-    echo "Generating SSH key..."
-    ssh-keygen -t ed25519 -C "merox@homelab" -f "$SSH_KEY_PATH" -N ""
-    
-    echo -e "\e[32mYour public key is:\e[0m"
-    cat "${SSH_KEY_PATH}.pub"
-    echo -e "\e[33mAdd the public key to GitHub under Deploy Keys and press Enter...\e[0m"
-    read -r
-else
-    echo "SSH key already exists at $SSH_KEY_PATH."
-fi
+# Ask for repository type
+read -p "Will you be using a Public or Private repository? (public/private): " REPO_TYPE
 
-# Test SSH connection to GitHub
-echo "Testing SSH connection to GitHub..."
-if ssh -o StrictHostKeyChecking=no -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-    echo "SSH connection is functional."
-else
-    echo "SSH connection failed. Check your SSH keys and permissions."
-    exit 1
-fi
+# Prompt for repository link
+read -p "Please enter the repository link (example - git@github.com:mer0x/homelab.git ): " REPO_URL
 
-# Clone the repository
-REPO_URL="git@github.com:mer0x/homelab.git"
-REPO_DIR="/home/homelab"
-if [ ! -d "$REPO_DIR" ]; then
-    echo "Cloning repository $REPO_URL into $REPO_DIR..."
-    GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone "$REPO_URL" "$REPO_DIR"
+if [ "$REPO_TYPE" == "private" ]; then
+    # Generate SSH key
+    SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
+    if [ ! -f "$SSH_KEY_PATH" ]; then
+        echo "Generating SSH key..."
+        ssh-keygen -t ed25519 -C "merox@homelab" -f "$SSH_KEY_PATH" -N ""
+        
+        echo -e "\e[32mYour public key is:\e[0m"
+        cat "${SSH_KEY_PATH}.pub"
+        echo -e "\e[33mAdd the public key to GitHub under Deploy Keys and press Enter...\e[0m"
+        read -r
+    else
+        echo "SSH key already exists at $SSH_KEY_PATH."
+    fi
+
+    # Test SSH connection to GitHub
+    echo "Testing SSH connection to GitHub..."
+    if ssh -o StrictHostKeyChecking=no -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        echo "SSH connection is functional."
+    else
+        echo "SSH connection failed. Check your SSH keys and permissions."
+        exit 1
+    fi
+
+    # Clone the repository (Private)
+    REPO_DIR="/home/homelab"
+    if [ ! -d "$REPO_DIR" ]; then
+        echo "Cloning private repository $REPO_URL into $REPO_DIR..."
+        GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone "$REPO_URL" "$REPO_DIR"
+    else
+        echo "Repository already exists at $REPO_DIR."
+    fi
 else
-    echo "Repository already exists at $REPO_DIR."
+    # Clone the repository (Public)
+    REPO_DIR="/home/homelab"
+    if [ ! -d "$REPO_DIR" ]; then
+        echo "Cloning public repository $REPO_URL into $REPO_DIR..."
+        git clone "$REPO_URL" "$REPO_DIR"
+    else
+        echo "Repository already exists at $REPO_DIR."
+    fi
 fi
 
 # Run Terraform init and apply
