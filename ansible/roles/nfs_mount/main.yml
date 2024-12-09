@@ -1,0 +1,28 @@
+---
+- name: Mount Synology NFS
+  hosts: docker
+  become: true
+  tasks:
+    - name: Install NFS packages
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+        update_cache: true
+
+    - name: Ensure mount directory exists
+      ansible.builtin.file:
+        path: /media
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Add NFS entry to /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        line: "REPLACE_this_with_your_nfs_server_ip_address:/volume1/Server/Data/alto/media_nas/ /media nfs rw,hard,intr 0 0"
+        state: present
+
+    - name: Reboot container
+      ansible.builtin.shell: reboot
+      ignore_errors: true

@@ -1,0 +1,179 @@
+services:
+  jellyseer:
+    image: fallenbagel/jellyseerr
+    container_name: jellyseer
+    restart: unless-stopped
+    volumes:
+      - /media-config/jellyseer:/app/config
+      - /media:/media
+    ports:
+      - 5055:5055
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyseer-media.rule=Host(`jellyseer.local`)"
+      - "traefik.http.routers.jellyseer-media.entrypoints=https"
+      - "traefik.http.routers.jellyseer-media.tls=true"
+      - "traefik.http.services.jellyseer-media.loadbalancer.server.port=5055"
+    networks:
+      - proxy
+
+#  plex:
+#    image: plexinc/pms-docker:latest
+#    container_name: plex
+#    restart: unless-stopped
+#    ports:
+#      - 32400:32400
+#      - 32401:32401
+#      - 8324:8324/tcp
+#      - 32469:32469/tcp
+#      - 1900:1900/udp
+#      - 32410:32410/udp
+#      - 32412:32412/udp
+#      - 32413:32413/udp
+#      - 32414:32414/udp
+#    environment:
+#      - PLEX_CLAIM=claim-Kj2vfSBR71WSYBmnBMgm  
+#      - PUID=1057  
+#      - PGID=1056  
+#      - TZ=Europe/Bucharest  
+#    volumes:
+#      - /media-config/plex:/config 
+#      - /media:/data  
+#      - /media/movies:/movies
+#      - /media/shows:/TVs
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.http.routers.plex.rule=Host(`plex.local`)" 
+#      - "traefik.http.routers.plex.entrypoints=https"  
+#      - "traefik.http.routers.plex.tls=true"  
+#      - "traefik.http.services.plex.loadbalancer.server.port=32400" 
+#    networks:
+#      - proxy
+#    devices:
+#      - "/dev/dri/renderD128:/dev/dri/renderD128"
+      
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    volumes:
+      - /media-config/jellyfin:/config
+      - /media:/media
+      - /media/movies:/movies
+      - /media/shows:/TVs
+    ports:
+      - 8096:8096
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin-media.rule=Host(`jellyfin.local`)"
+      - "traefik.http.routers.jellyfin-media.entrypoints=https"
+      - "traefik.http.routers.jellyfin-media.tls=true"
+      - "traefik.http.services.jellyfin-media.loadbalancer.server.port=8096"
+    networks:
+      - proxy
+    devices:
+      - "/dev/dri/renderD128:/dev/dri/renderD128"
+
+  radarr:
+    container_name: radarr
+    restart: unless-stopped
+    ports:
+      - 7878:7878
+    volumes:
+      - /media-config/radarr:/config
+      - /media/qbittorrent:/downloads
+      - /media/movies:/movies
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+    image: linuxserver/radarr
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr-media.rule=Host(`radarr.local`)"
+      - "traefik.http.routers.radarr-media.entrypoints=https"
+      - "traefik.http.routers.radarr-media.tls=true"
+      - "traefik.http.services.radarr-media.loadbalancer.server.port=7878"
+    networks:
+      - proxy
+
+  sonarr:
+    container_name: sonarr
+    restart: unless-stopped
+    ports:
+      - 8989:8989
+    volumes:
+      - /media-config/sonarr:/config
+      - /media/qbittorrent:/downloads
+      - /media/shows:/tv
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+    image: linuxserver/sonarr
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr-media.rule=Host(`sonarr.local`)"
+      - "traefik.http.routers.sonarr-media.entrypoints=https"
+      - "traefik.http.routers.sonarr-media.tls=true"
+      - "traefik.http.services.sonarr-media.loadbalancer.server.port=8989"
+    networks:
+      - proxy
+
+  jackett:
+    container_name: jackett
+    restart: unless-stopped
+    ports:
+      - 9117:9117
+    volumes:
+      - /media-config/jackett:/config
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+    image: linuxserver/jackett
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jackett-media.rule=Host(`jackett.local`)"
+      - "traefik.http.routers.jackett-media.entrypoints=https"
+      - "traefik.http.routers.jackett-media.tls=true"
+      - "traefik.http.services.jackett-media.loadbalancer.server.port=9117"
+    networks:
+      - proxy
+
+  qbittorrent:
+    image: linuxserver/qbittorrent
+    container_name: qbittorrent
+    environment:
+      - PUID=1057
+      - PGID=1056
+      - TZ=Europe/Bucharest
+      - WEBUI_PORT=8091
+    volumes:
+      - /media-config/qbittorrent:/config
+      - /media/qbittorrent:/downloads
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+      - 8091:8091
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent-media.rule=Host(`qbittorrent.local`)"
+      - "traefik.http.routers.qbittorrent-media.entrypoints=https"
+      - "traefik.http.routers.qbittorrent-media.tls=true"
+      - "traefik.http.services.qbittorrent-media.loadbalancer.server.port=8091"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

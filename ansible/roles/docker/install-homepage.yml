@@ -1,0 +1,26 @@
+---
+- name: Install and configure GetHomepage
+  hosts: docker
+  become: true
+  tasks:
+    - name: Ensure Homepage config directory exists
+      ansible.builtin.file:
+        path: /home/homepage
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy Homepage config archive to container
+      ansible.builtin.copy:
+        src: /home/homelab/configs/docker/homepage/homepage.tar.gz
+        dest: /home/homepage/homepage.tar.gz
+
+    - name: Extract Homepage config files
+      ansible.builtin.unarchive:
+        src: /home/homepage/homepage.tar.gz
+        dest: /home/homepage/
+        remote_src: yes
+
+    - name: Deploy Homepage with Docker Compose
+      ansible.builtin.shell: docker-compose -f /home/homepage/docker-compose.yml up -d

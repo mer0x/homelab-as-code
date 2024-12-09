@@ -1,0 +1,78 @@
+---
+- name: Install and configure Docker
+  hosts: docker
+  become: true
+  tasks:
+    - name: Install Docker prerequisites
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+        update_cache: true
+
+    - name: Ensure /etc/apt/sources.list.d exists
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Add Docker GPG key
+      ansible.builtin.shell: curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Add Docker repository
+      ansible.builtin.shell: |
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" > /etc/apt/sources.list.d/docker.list
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+        update_cache: true
+
+    - name: Create Docker network 'proxy'
+      ansible.builtin.shell: docker network create proxy || true
+
+    - name: Install Docker Compose
+      ansible.builtin.get_url:
+        url: https://github.com/docker/compose/releases/download/v2.27.2/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create Portainer Docker Compose file
+      ansible.builtin.copy:
+        dest: /root/portainer-docker-compose.yml
+        content: |
+          version: '3.3'
+          services:
+            portainer:
+              image: portainer/portainer-ce:latest
+              container_name: portainer
+              restart: always
+              ports:
+                - "9000:9000"
+              volumes:
+                - "/var/run/docker.sock:/var/run/docker.sock"
+                - "/data:/data"
+
+    - name: Start Portainer with Docker Compose
+      ansible.builtin.shell: docker-compose -f /root/portainer-docker-compose.yml up -d
+
+    - name: Copy Media Stack Docker Compose file
+      ansible.builtin.copy:
+        src: /home/homelab/configs/docker/media_stack/main.yml
+        dest: /root/media-stack.yml
+
+    - name: Start Media Stack with Docker Compose
+      ansible.builtin.shell: docker-compose -f /root/media-stack.yml up -d

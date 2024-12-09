@@ -1,0 +1,31 @@
+---
+- name: Install and configure Traefik
+  hosts: docker
+  become: true
+  tasks:
+    - name: Ensure Traefik base directory exists
+      ansible.builtin.file:
+        path: /home/traefik
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy Traefik config archive to container
+      ansible.builtin.copy:
+        src: /home/homelab/configs/docker/traefik/traefik-config.tar.gz
+        dest: /home/traefik/traefik-config.tar.gz
+
+    - name: Extract Traefik configuration files
+      ansible.builtin.unarchive:
+        src: /home/traefik/traefik-config.tar.gz
+        dest: /home/traefik/
+        remote_src: yes
+
+    - name: Ensure acme.json file exists
+      ansible.builtin.file:
+        path: /home/traefik/data/acme.json
+        state: touch
+        owner: root
+        group: root
+        mode: '0600'
