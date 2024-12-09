@@ -122,4 +122,4 @@ else
     exit 1
 fi
 
-echo "Process complete! Terraform has also taken care of Ansible."
+echo "Process complete!"
