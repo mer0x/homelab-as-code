@@ -4,7 +4,7 @@
 echo -e "\033[36;1m ██╗  ██╗  ██████╗ \033[0m" 
 echo -e "\033[36;1m ██║  ██║ ██╔═══██╗\033[0m"
 echo -e "\033[36;1m ███████║ ██║      \033[0m"
-echo -e "\033[36;1m ██╔══██║ ██║   ██║\033[0m"
+echo -e "\033[36;1m ██╔══██║ ██a═ ██║\033[0m"
 echo -e "\033[36;1m ██║  ██║ ╚██████╔╝\033[0m"
 echo -e "\033[36;1m ╚═╝  ╚═╝  ╚═════╝ \033[0m"
 echo -e "\033[36;1m  ██████╗   ██████╗\033[0m"
@@ -63,7 +63,7 @@ fi
 read -p "Will you be using a Public or Private repository? (public/private): " REPO_TYPE
 
 # Prompt for repository link
-read -p "Please enter the repository link (example - git@github.com:mer0x/homelab.git ): " REPO_URL
+read -p "Please enter the repository link: " REPO_URL
 
 if [ "$REPO_TYPE" == "private" ]; then
     # Generate SSH key
@@ -88,24 +88,28 @@ if [ "$REPO_TYPE" == "private" ]; then
         echo "SSH connection failed. Check your SSH keys and permissions."
         exit 1
     fi
+fi
 
-    # Clone the repository (Private)
-    REPO_DIR="/home/homelab"
-    if [ ! -d "$REPO_DIR" ]; then
-        echo "Cloning private repository $REPO_URL into $REPO_DIR..."
+# Clone the repository
+REPO_DIR="/home/homelab"
+if [ ! -d "$REPO_DIR" ]; then
+    echo "Cloning repository $REPO_URL into $REPO_DIR..."
+    if [ "$REPO_TYPE" == "private" ]; then
         GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone "$REPO_URL" "$REPO_DIR"
     else
-        echo "Repository already exists at $REPO_DIR."
+        git clone "$REPO_URL" "$REPO_DIR"
     fi
 else
-    # Clone the repository (Public)
-    REPO_DIR="/home/homelab"
-    if [ ! -d "$REPO_DIR" ]; then
-        echo "Cloning public repository $REPO_URL into $REPO_DIR..."
-        git clone "$REPO_URL" "$REPO_DIR"
-    else
-        echo "Repository already exists at $REPO_DIR."
-    fi
+    echo "Repository already exists at $REPO_DIR."
+fi
+
+# Ask if the user has edited the specific files
+echo -e "\e[33mHave you edited the specific files declared in the tutorial?\n(Visit: \e[36mhttps://merox.dev/blog/homelab-as-code\e[33m)\e[0m"
+read -p "(yes/no): " EDITED_FILES
+
+if [ "$EDITED_FILES" != "yes" ]; then
+    echo "Please edit the specific files declared in the tutorial before proceeding."
+    exit 0
 fi
 
 # Run Terraform init and apply
@@ -122,4 +126,4 @@ else
     exit 1
 fi
 
-echo "Process complete!"
+echo "Process complete! Visit www.merox.dev for more :)."
