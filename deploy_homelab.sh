@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Logo
-echo -e "\033[36;1m ██╗  ██╗  ██████╗ \033[0m" 
-echo -e "\033[36;1m ██║  ██║ ██╔═══██╗\033[0m"
-echo -e "\033[36;1m ███████║ ██║      \033[0m"
-echo -e "\033[36;1m ██╔══██║ ██    ██║\033[0m"
-echo -e "\033[36;1m ██║  ██║ ╚██████╔╝\033[0m"
-echo -e "\033[36;1m ╚═╝  ╚═╝  ╚═════╝ \033[0m"
-echo -e "\033[36;1m  ██████╗   ██████╗\033[0m"
-echo -e "\033[36;1m  ╚═════╝   ╚═════╝\033[0m"
-echo -e "\033[33;1m  Homelab as Code by Merox.dev \033[0m"
+echo -e "\n"
+echo -e "\033[36;1m ██╗  ██╗ █████╗  ██████╗ \033[0m"
+echo -e "\033[36;1m ██║  ██║██╔══██╗██╔════╝ \033[0m"
+echo -e "\033[36;1m ███████║███████║██║      \033[0m"
+echo -e "\033[36;1m ██╔══██║██╔══██║██║      \033[0m"
+echo -e "\033[36;1m ██║  ██║██║  ██║╚██████╗ \033[0m"
+echo -e "\033[36;1m ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ \033[0m"
+echo -e "\033[36;1m                         \033[0m"
+echo -e "\033[33;1m Homelab as Code by Merox.dev \033[0m"
 echo -e "\n"
 
 # Ensure sudo is installed without using sudo
@@ -57,6 +57,22 @@ if ! command -v terraform &> /dev/null; then
     sudo apt install -y terraform
 else
     echo "Terraform is already installed."
+fi
+
+# Ensure SSH configuration is set up
+SSH_CONFIG_PATH="$HOME/.ssh/config"
+if [ ! -f "$SSH_CONFIG_PATH" ]; then
+    echo "Creating SSH configuration..."
+    mkdir -p "$HOME/.ssh"
+    cat <<EOL > "$SSH_CONFIG_PATH"
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
+EOL
+    chmod 400 "$SSH_CONFIG_PATH"
+    echo "SSH configuration created and permissions set."
+else
+    echo "SSH configuration already exists."
 fi
 
 # Ask for repository type
