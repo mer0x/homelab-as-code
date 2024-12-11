@@ -60,10 +60,12 @@ else
 fi
 
 # Ask for repository type
-read -p "\e[33mWill you be using a Public or Private repository? (public/private): \e[0m" REPO_TYPE
+echo -e "\e[33mWill you be using a Public or Private repository? (public/private): \e[0m"
+read REPO_TYPE
 
 # Prompt for repository link
-read -p "\e[33mPlease enter the repository link: \e[0m" REPO_URL
+echo -e "\e[33mPlease enter the repository link: \e[0m"
+read REPO_URL
 
 if [ "$REPO_TYPE" == "private" ]; then
     # Generate SSH key
