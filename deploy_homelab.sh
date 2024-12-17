@@ -108,10 +108,10 @@ else
 fi
 
 # Important Notes
-echo -e "\e[32mPlease make sure to update the SSH public key in the following files:\e[0m"
-echo -e "\e[32m- /home/homelab/terraform/modules/docker_vm/main_tf (replace YOUR_SSH_PUBLIC_KEY)\e[0m"
-echo -e "\e[32m- /home/homelab/packer/ubuntu-server-jammy-docker/http/user-data (update ssh_authorized_keys: - ssh-rsa)\e[0m"
-echo -e "\e[35m- /home/homelab/packer/ubuntu-server-jammy-docker/ubuntu-server-jammy-docker.pkr.hcl (CHANGE DEPLOYMENT_IP WITH IP WHERE YOU RUN THIS SCRIPT)\e[0m"
+#echo -e "\e[32mPlease make sure to update the SSH public key in the following files:\e[0m"
+#echo -e "\e[32m- /home/homelab/terraform/modules/docker_vm/main_tf (replace YOUR_SSH_PUBLIC_KEY)\e[0m"
+#echo -e "\e[32m- /home/homelab/packer/ubuntu-server-jammy-docker/http/user-data (update ssh_authorized_keys: - ssh-rsa)\e[0m"
+#echo -e "\e[35m- /home/homelab/packer/ubuntu-server-jammy-docker/ubuntu-server-jammy-docker.pkr.hcl (CHANGE DEPLOYMENT_IP WITH IP WHERE YOU RUN THIS SCRIPT)\e[0m"
 
 # Test SSH connection to GitHub for private repositories
 if [ "$REPO_TYPE" == "private" ]; then
