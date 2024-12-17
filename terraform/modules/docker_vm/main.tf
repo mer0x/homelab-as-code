@@ -47,7 +47,7 @@ resource "proxmox_vm_qemu" "ubuntu_vm" {
 
   os_type = "cloud-init"
   # static IP
-  ipconfig0 = "ip=IP_MACHINE/24,gw=10.57.57.1"
+  ipconfig0 = "ip=IP_MACHINE/24,gw=GateWay_IP"
 
   # Cloud-Init
   ciuser     = "root"                     
