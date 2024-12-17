@@ -7,7 +7,7 @@ echo -e "\033[36;1m ██║  ██║██╔══██╗██╔══�
 echo -e "\033[36;1m ███████║███████║██║      \033[0m"
 echo -e "\033[36;1m ██╔══██║██╔══██║██║      \033[0m"
 echo -e "\033[36;1m ██║  ██║██║  ██║╚██████╗ \033[0m"
-echo -e "\033[36;1m ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ \033[0m"
+echo -e "\033[36;1m ╚═╝  ╚═╝╚═╝  ╚═════╝ \033[0m"
 echo -e "\033[36;1m                         \033[0m"
 echo -e "\033[33;1m Homelab as Code by Merox.dev \033[0m"
 echo -e "\n"
@@ -62,9 +62,6 @@ fi
 # Install Packer
 if ! command -v packer &> /dev/null; then
     echo "Installing Packer..."
-    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-    sudo apt update
     sudo apt install -y packer
 else
     echo "Packer is already installed."
@@ -94,22 +91,30 @@ read REPO_TYPE
 echo -e "\e[33mPlease enter the repository link: \e[0m"
 read REPO_URL
 
-if [ "$REPO_TYPE" == "private" ]; then
-    # Generate SSH key
-    SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
-    if [ ! -f "$SSH_KEY_PATH" ]; then
-        echo "Generating SSH key..."
-        ssh-keygen -t ed25519 -C "merox@homelab" -f "$SSH_KEY_PATH" -N ""
-        
-        echo -e "\e[32mYour public key is:\e[0m"
-        cat "${SSH_KEY_PATH}.pub"
+# Generate SSH key
+SSH_KEY_PATH="$HOME/.ssh/id_rsa"
+if [ ! -f "$SSH_KEY_PATH" ]; then
+    echo "Generating SSH key..."
+    ssh-keygen -t rsa -b 4096 -C "merox@homelab" -f "$SSH_KEY_PATH" -N ""
+    
+    echo -e "\e[32mYour public key is:\e[0m"
+    cat "${SSH_KEY_PATH}.pub"
+    if [ "$REPO_TYPE" == "private" ]; then
         echo -e "\e[33mAdd the public key to GitHub under Deploy Keys and press Enter...\e[0m"
         read -r
-    else
-        echo "SSH key already exists at $SSH_KEY_PATH."
     fi
+else
+    echo "SSH key already exists at $SSH_KEY_PATH."
+fi
 
-    # Test SSH connection to GitHub
+# Important Notes
+echo -e "\e[32mPlease make sure to update the SSH public key in the following files:\e[0m"
+echo -e "\e[32m- /home/homelab/terraform/modules/docker_vm/main_tf (replace YOUR_SSH_PUBLIC_KEY)\e[0m"
+echo -e "\e[32m- /home/homelab/packer/ubuntu-server-jammy-docker/http/user-data (update ssh_authorized_keys: - ssh-rsa)\e[0m"
+echo -e "\e[35m- /home/homelab/packer/ubuntu-server-jammy-docker/ubuntu-server-jammy-docker.pkr.hcl (CHANGE DEPLOYMENT_IP WITH IP WHERE YOU RUN THIS SCRIPT)\e[0m"
+
+# Test SSH connection to GitHub for private repositories
+if [ "$REPO_TYPE" == "private" ]; then
     echo "Testing SSH connection to GitHub..."
     if ssh -o StrictHostKeyChecking=no -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
         echo "SSH connection is functional."
@@ -141,39 +146,16 @@ if [ "$EDITED_FILES" != "yes" ]; then
     exit 0
 fi
 
-# Ask for deployment type (LXC or VM)
-echo -e "\e[33mDo you want to deploy to LXC or VM? (lxc/vm): \e[0m"
-read DEPLOY_TYPE
-
-if [ "$DEPLOY_TYPE" == "lxc" ]; then
-    # Run Terraform init and apply
-    TERRAFORM_DIR="$REPO_DIR/terraform/"
-    if [ -d "$TERRAFORM_DIR" ]; then
-        echo "Navigating to $TERRAFORM_DIR..."
-        cd "$TERRAFORM_DIR" || exit
-        echo "Initializing Terraform..."
-        terraform init
-        echo "Applying Terraform configuration..."
-        terraform apply -auto-approve
-    else
-        echo "Terraform directory $TERRAFORM_DIR does not exist. Check the repository."
-        exit 1
-    fi
-elif [ "$DEPLOY_TYPE" == "vm" ]; then
-    # Initialize Packer and build VM
-    echo "Navigating to /home/homelab/packer..."
-    cd /home/homelab/packer || exit
-    echo "Initializing Packer..."
-    packer init packer.pkr.hcl
-    echo "Navigating to ubuntu-server-jammy-docker directory..."
-    cd ubuntu-server-jammy-docker || exit
-    echo "Validating Packer template..."
-    packer validate -var-file='../credentials.pkr.hcl' ./ubuntu-server-jammy-docker.pkr.hcl
-    echo "Building VM with Packer..."
-    packer build -var-file='../credentials.pkr.hcl' ./ubuntu-server-jammy-docker.pkr.hcl
-else
-    echo "Invalid deployment type selected. Please choose either 'lxc' or 'vm'."
-    exit 1
-fi
+# Initialize Packer and build VM
+echo "Navigating to /home/homelab/packer..."
+cd /home/homelab/packer || exit
+echo "Initializing Packer..."
+packer init packer.pkr.hcl
+echo "Navigating to ubuntu-server-jammy-docker directory..."
+cd ubuntu-server-jammy-docker || exit
+echo "Validating Packer template..."
+packer validate -var-file='../credentials.pkr.hcl' ./ubuntu-server-jammy-docker.pkr.hcl
+echo "Building VM with Packer..."
+packer build -var-file='../credentials.pkr.hcl' ./ubuntu-server-jammy-docker.pkr.hcl
 
 echo "Process complete! Visit www.merox.dev for more :)."
