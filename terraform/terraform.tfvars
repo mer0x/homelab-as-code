@@ -1,6 +1,6 @@
 proxmox_api_url = "https://your-proxmox-ip-or-fqdn/api2/json"
 proxmox_api_token_id = "terraform_user@pam!homelab"
-proxmox_api_token_secret = "your-proxmox-api-token-secret"
+proxmox_api_token_secret = "your-proxmox-api-token-secret   "
 proxmox_host     = "proxmox-host-ip"
 proxmox_user     = "proxmox-user"
 proxmox_password = "proxmox-password"

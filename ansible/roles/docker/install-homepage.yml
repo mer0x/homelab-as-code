@@ -23,4 +23,4 @@
         remote_src: yes
 
     - name: Deploy Homepage with Docker Compose
-      ansible.builtin.shell: docker-compose -f /home/homepage/docker-compose.yml up -d
+      ansible.builtin.shell: /usr/local/bin/docker-compose -f /home/homepage/docker-compose.yml up -d

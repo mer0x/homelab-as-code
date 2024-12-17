@@ -36,7 +36,7 @@ services:
 #      - 32413:32413/udp
 #      - 32414:32414/udp
 #    environment:
-#      - PLEX_CLAIM=claim-Kj2vfSBR71WSYBmnBMgm  
+#      - PLEX_CLAIM=claim-Token  
 #      - PUID=1057  
 #      - PGID=1056  
 #      - TZ=Europe/Bucharest  
@@ -79,8 +79,9 @@ services:
       - "traefik.http.services.jellyfin-media.loadbalancer.server.port=8096"
     networks:
       - proxy
-    devices:
-      - "/dev/dri/renderD128:/dev/dri/renderD128"
+# UNCOMMENT ONLY IF YOU PASSHTROUGH THE DRIVER TO VM FOR TRANSCODING ( BELOW IS THE ONE USED FOR INTEL CPUs )
+#    devices:
+#      - "/dev/dri/renderD128:/dev/dri/renderD128"
 
   radarr:
     container_name: radarr

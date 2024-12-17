@@ -22,7 +22,14 @@
         path: /etc/fstab
         line: "REPLACE_this_with_your_nfs_server_ip_address:REPLACE_this_with_your_nfs_path /media nfs rw,hard,intr 0 0"
         state: present
-
-    - name: Reboot container
-      ansible.builtin.shell: reboot
-      ignore_errors: true
+        
+    - name: Reload mounts with mount -a
+      ansible.builtin.command:
+        cmd: mount -a
+      register: mount_result
+      changed_when: mount_result.rc == 0
+      failed_when: mount_result.rc != 0
+# NEED IT ONLY FOR LXC 
+#    - name: Reboot container
+#     ansible.builtin.shell: reboot
+#      ignore_errors: true

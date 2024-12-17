@@ -67,7 +67,7 @@
                 - "/data:/data"
 
     - name: Start Portainer with Docker Compose
-      ansible.builtin.shell: docker-compose -f /root/portainer-docker-compose.yml up -d
+      ansible.builtin.shell: /usr/local/bin/docker-compose -f /root/portainer-docker-compose.yml up -d
 
     - name: Copy Media Stack Docker Compose file
       ansible.builtin.copy:
@@ -75,4 +75,4 @@
         dest: /root/media-stack.yml
 
     - name: Start Media Stack with Docker Compose
-      ansible.builtin.shell: docker-compose -f /root/media-stack.yml up -d
+      ansible.builtin.shell: /usr/local/bin/docker-compose -f /root/media-stack.yml up -d
