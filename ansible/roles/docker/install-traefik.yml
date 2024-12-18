@@ -24,7 +24,7 @@
 
     - name: Ensure acme.json file exists
       ansible.builtin.file:
-        path: /home/traefik/data/acme.json
+        path: /home/traefik/traefik-config/data/acme.json
         state: touch
         owner: root
         group: root
