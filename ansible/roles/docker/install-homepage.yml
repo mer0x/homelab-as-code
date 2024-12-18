@@ -19,7 +19,7 @@
     - name: Extract Homepage config files
       ansible.builtin.unarchive:
         src: /home/homepage/homepage.tar.gz
-        dest: /home/homepage/
+        dest: /home/
         remote_src: yes
 
     - name: Deploy Homepage with Docker Compose
