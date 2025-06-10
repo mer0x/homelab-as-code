@@ -1,0 +1,35 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: rancher
+  namespace: cattle-system
+spec:
+  releaseName: rancher
+  chart:
+    spec:
+      chart: rancher
+      version: "2.11.2"
+      sourceRef:
+        kind: HelmRepository
+        name: rancher
+        namespace: flux-system
+  interval: 10m
+  dependsOn:
+    - name: cert-manager
+      namespace: cert-manager
+  values:
+    hostname: rancher.k8s.merox.dev
+    replicas: 3
+    bootstrapPassword: "adminn"
+    ingress:
+      enabled: true
+      ingressClassName: cilium
+      pathType: Prefix
+      extraAnnotations:
+        cert-manager.io/cluster-issuer: letsencrypt-production
+      tls:
+        source: secret
+    global:
+      cattle:
+        fleet:
+          enabled: false

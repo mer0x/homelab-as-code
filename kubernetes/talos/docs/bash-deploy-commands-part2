@@ -1,0 +1,59 @@
+# Before deploy, please apply:
+
+allow-traffic-flux-network.yaml
+(This is needed if you are using Calico as CNI)
+
+# Before deploy, please make sure you run Cilium helm install in first 10 minutes after talos bootstrap:
+
+helm install \
+    cilium \
+    cilium/cilium \
+    --version 1.16.6 \
+    --namespace kube-system \
+    --set ipam.mode=kubernetes \
+    --set kubeProxyReplacement=true \
+    --set securityContext.capabilities.ciliumAgent="{CHOWN,KILL,NET_ADMIN,NET_RAW,IPC_LOCK,SYS_ADMIN,SYS_RESOURCE,DAC_OVERRIDE,FOWNER,SETGID,SETUID}" \
+    --set securityContext.capabilities.cleanCiliumState="{NET_ADMIN,SYS_ADMIN,SYS_RESOURCE}" \
+    --set cgroup.autoMount.enabled=false \
+    --set cgroup.hostRoot=/sys/fs/cgroup \
+    --set k8sServiceHost=localhost \
+    --set k8sServicePort=7445
+
+# Bootstrap flux on cluster
+
+flux bootstrap github \
+  --components-extra=image-reflector-controller,image-automation-controller \
+  --owner=mer0x \
+  --repository=flux \
+  --branch=main \
+  --path=clusters/merox \
+  --personal \
+  --token-auth 
+
+
+
+kubectl get pods -n flux-system
+
+face următoarele lucruri în mod explicit, Merox:
+
+
+⸻
+# Flux command for quick reconciliation of the kustomization
+
+flux reconcile kustomization infrastructure-cilium --with-source
+
+# Flux fortare reconcile complet
+flux reconcile source git flux-system
+
+# Add SOPS Decryption in k8s cluster
+
+# Creează namespace-ul flux-system dacă nu există
+kubectl create namespace flux-system --dry-run=client -o yaml | kubectl apply -f -
+
+# Creează secretul cu cheia AGE în cluster
+kubectl create secret generic sops-age \
+  --namespace=flux-system \
+  --from-file=age.agekey=age-key.txt
+
+# If you want to run Longhorn, please check patches/upgrade-image/
+Or you can directly download talos image with iSCSI extensions needed.(https://factory.talos.dev/)

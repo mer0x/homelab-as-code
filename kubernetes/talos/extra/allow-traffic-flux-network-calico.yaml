@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-flux
+  namespace: flux-system
+spec:
+  podSelector: {}  # se aplică la toate podurile din namespace
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - {}            # permite orice inbound
+  egress:
+    - {}            # permite orice outbound

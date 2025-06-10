@@ -1,0 +1,16 @@
+# FOR CALICO
+
+#cluster:
+#  network:
+#   cni:
+#      name: custom
+#      urls:
+#        - https://raw.githubusercontent.com/projectcalico/calico/v3.27.0/manifests/calico.yaml
+
+# FOR CILIUM
+cluster:
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true

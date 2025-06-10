@@ -1,0 +1,36 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki-stack
+  namespace: monitoring
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: loki-stack
+      version: 2.10.2
+      interval: 60m
+      sourceRef:
+        kind: HelmRepository
+        name: grafana-chart
+        namespace: flux-system
+  values:
+    loki:
+      enabled: true
+
+    promtail:
+      enabled: true
+      config:
+        logLevel: info
+        serverPort: 3101
+        clients:
+          - url: http://10.69.69.2:3100/loki/api/v1/push
+
+    fluent-bit:
+      enabled: false
+
+    grafana:
+      enabled: false
+
+    prometheus:
+      enabled: false

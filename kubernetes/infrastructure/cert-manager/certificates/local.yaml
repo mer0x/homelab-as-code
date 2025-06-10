@@ -1,0 +1,19 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: local-merox-dev
+  namespace: cert-manager
+spec:
+  secretName: local-merox-dev-production-tls
+  secretTemplate:
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+  issuerRef:
+    name: letsencrypt-production
+    kind: ClusterIssuer
+  commonName: "*.k8s.merox.dev"
+  dnsNames:
+  - "k8s.merox.dev"
+  - "*.k8s.merox.dev"

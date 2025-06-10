@@ -1,0 +1,52 @@
+# Generate secrets
+  talosctl gen secrets
+
+# Generate configs
+
+ #longhorn-mount.yaml is required only if you want to deploy longhorn in your cluster
+
+talosctl gen config meroxdev-k8s-cluster --kubernetes-version=1.32.5 https://10.57.57.80:6443 \
+  --with-secrets secrets.yaml \
+  --config-patch @cni.yaml \
+  --config-patch @kubeprism.yaml \
+  --config-patch @interface-persistent-name.yaml \
+  --config-patch @kubelet-certificate.yaml \
+  --config-patch @longhorn-mount.yaml \
+  --config-patch-control-plane @vip.yaml \
+  --output rendered/
+
+
+# Deploy controlplanes:
+
+  talosctl apply -f rendered/controlplane.yaml -n 10.57.57.80 --insecure
+  talosctl apply -f rendered/controlplane.yaml -n 10.57.57.82 --insecure
+  talosctl apply -f rendered/controlplane.yaml -n 10.57.57.84 --insecure
+
+# Deploy workers:
+
+
+  talosctl apply -f rendered/worker.yaml -n 10.57.57.81 --insecure
+  talosctl apply -f rendered/worker.yaml -n 10.57.57.83 --insecure
+  talosctl apply -f rendered/worker.yaml -n 10.57.57.85 --insecure
+
+# Copy talosctl config
+  cp rendered/talosconfig ~/.talos/config
+
+# Set endpoints & node
+
+  talosctl config endpoint 10.57.57.80 10.57.57.82 10.57.57.84
+  talosctl config node 10.57.57.80
+
+# Bootstrap cluster
+  talosctl bootstrap -n 10.57.57.80
+
+# Get kubectl config local
+  talosctl kubeconfig -n 10.57.57.88
+
+# Remote view endpoint
+  talosctl dashboard -n 10.57.57.80
+
+# kubectl get context & switching context
+
+  kubectl config get-contexts
+  kubectl config use-context meroxdev-k8s-cluster

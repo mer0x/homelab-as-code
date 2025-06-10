@@ -1,0 +1,63 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: longhorn
+      version: "1.8.1"  # sau ultima versiune disponibilă
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+        namespace: longhorn-system
+      interval: 1m
+  values:
+    persistence:
+      defaultClass: true
+      defaultClassReplicaCount: 3
+      reclaimPolicy: Retain
+    defaultSettings:
+      defaultDataPath: /var/lib/longhorn
+      defaultDataLocality: disabled
+      replicaSoftAntiAffinity: false
+      replicaAutoBalance: disabled
+      storageOverProvisioningPercentage: 100
+      storageMinimalAvailablePercentage: 25
+      upgradeChecker: false
+      defaultReplicaCount: 3
+      defaultLonghornStaticStorageClass: longhorn
+      backupstorePollInterval: 300
+      taintToleration: ""
+      systemManagedComponentsNodeSelector: ""
+      priorityClass: ""
+      autoSalvage: true
+      autoDeletePodWhenVolumeDetachedUnexpectedly: true
+      disableSchedulingOnCordonedNode: true
+      replicaZoneSoftAntiAffinity: false
+      volumeAttachmentRecoveryPolicy: wait
+      nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+      mkfsExt4Parameters: ""
+      guaranteedEngineManagerCPU: 12
+      guaranteedReplicaManagerCPU: 12
+    longhornManager:
+      nodeSelector:
+        computestorage: "true"
+      tolerations: []
+    longhornDriver:
+      nodeSelector:
+        computestorage: "true"
+      tolerations: []
+    longhornUI:
+      replicas: 1
+      nodeSelector:
+        computestorage: "true"
+      tolerations: []
+    ingress:
+      enabled: false  # vom folosi propriul nostru ingress
+    service:
+      ui:
+        type: ClusterIP
+        nodePort: null

@@ -1,0 +1,82 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/common-4.0.1/charts/library/common/values.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: &app flaresolverr
+  namespace: arr
+spec:
+  interval: 15m
+  chart:
+    spec:
+      chart: app-template
+      version: 4.0.1
+      interval: 30m
+      sourceRef:
+        kind: HelmRepository
+        name: bjw-s
+        namespace: flux-system
+
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+
+  values:
+    global:
+      fullnameOverride: *app
+      namespace: arr
+
+    controllers:
+      flaresolverr:
+        enabled: true
+        type: deployment
+        annotations:
+          reloader.stakater.com/auto: "true"
+
+        replicas: 1
+        
+        pod:
+          securityContext:
+            runAsUser: &context 1000
+            runAsGroup: *context
+            fsGroup: *context
+            fsGroupChangePolicy: "OnRootMismatch"
+          dnsPolicy: ClusterFirst
+
+        containers:
+          app:
+            image:
+              repository: ghcr.io/flaresolverr/flaresolverr
+              tag: v3.3.24
+              pullPolicy: IfNotPresent
+            env:
+              TZ: "${TZ}"
+              LOG_LEVEL: info
+
+            probes:
+              liveness:
+                enabled: false
+
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                  - ALL
+
+            resources:
+              requests:
+                cpu: 20m
+                memory: 128Mi
+              limits:
+                memory: 500Mi
+
+    service:
+      app:
+        primary: true
+        controller: flaresolverr
+        ports:
+          http:
+            port: 8191

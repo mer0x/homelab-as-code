@@ -1,0 +1,16 @@
+This step is needed if you deployed an clean Talos VM and want to be able to run Longhorn.
+curl -X POST --data-binary @longhorn.yaml https://factory.talos.dev/schematics
+
+Expecred output:
+{"id":"aabbccddeeff11223344556677889900abcdeff01234567890abcdef12345678"}
+
+Copy the ID and replace it on upgrade-image.sh
+
+chmod +x upgrade-image.sh
+./upgrade-image.sh
+
+
+Sources:
+https://longhorn.io/docs/1.9.0/advanced-resources/os-distro-specific/talos-linux-support/
+https://www.talos.dev/v1.6/talos-guides/configuration/system-extensions/
+https://www.talos.dev/v1.10/talos-guides/install/boot-assets/

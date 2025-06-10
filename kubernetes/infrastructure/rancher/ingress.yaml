@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rancher-ingress
+  namespace: cattle-system
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+spec:
+  ingressClassName: cilium
+  tls:
+  - hosts:
+    - rancher.k8s.merox.dev
+    secretName: rancher-k8s-merox-dev-tls
+  rules:
+  - host: rancher.k8s.merox.dev
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: rancher
+            port:
+              number: 80
